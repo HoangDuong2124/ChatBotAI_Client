@@ -1,10 +1,12 @@
+import {useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Community from "./pages/Community";
 import Credits from "./pages/Credits";
 import ChatBox from "./pages/ChatBox";
 import Sidebar from "./components/Sidebar";
 import "./App.css";
-import {useState } from "react";
+import "./assets/prism.css";
+
 import { assets } from "./assets/assets";
 
 function App() {
