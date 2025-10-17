@@ -11,18 +11,20 @@ import "./assets/prism.css";
 import { assets } from "./assets/assets";
 import { useAppContext } from "./context/AppContext";
 import Login from "./pages/Login";
+import {Toaster} from "react-hot-toast";
 
 function App() {
 
-  const {user} = useAppContext(); 
+  const {user,loadingUser} = useAppContext(); 
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const {pathname} = useLocation();
 
-  if(pathname === "/loading") return <Loading/>
+  if(pathname === "/loading"|| loadingUser) return <Loading/>
 
   return (
     <>
+    <Toaster />
     {!isMenuOpen && <img
     onClick={()=>setIsMenuOpen(true)}
     src={assets.menu_icon} className="absolute top-3 left-3 w-8 h-8 cursor-pointer md:hidden invert dark:invert-0" alt=""/>}
