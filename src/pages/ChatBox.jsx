@@ -13,6 +13,7 @@ const ChatBox = () => {
   const [loading, setLoading] = useState(false);
 
   const [prompt, setPrompt] = useState("");
+  const [promptHistory, setPromptHistory] = useState([]);
   const [mode, setMode] = useState("text");
   const [isPublished, setIsPublished] = useState(false);
 
@@ -22,11 +23,13 @@ const ChatBox = () => {
            e.preventDefault();
            if(!user) return toast("Login to send message");
            setLoading(true)
-           const promptCopy = prompt
+           const promptCopy = prompt;
+           const promptHistoryCopy = [...promptHistory, {role:"user", content:prompt}];
+           setPromptHistory(promptHistoryCopy);
            setPrompt("");
            setMessages(prev => [...prev,{role:"user", content:prompt,timestamp:Date.now(),isImage:false}]);
 
-           const {data} = await axios.post(`/api/message/${mode}`,{chatId:selectedChat._id, prompt,isPublished},
+           const {data} = await axios.post(`/api/message/${mode}`,{chatId:selectedChat._id,promptHistoryCopy,isPublished},
             {headers:{Authorization:token}});
             if(data.success){
                setMessages(prev => [...prev,data.reply])
@@ -50,6 +53,7 @@ const ChatBox = () => {
   useEffect(() => {
     if (selectedChat) {
       setMessages(selectedChat.messages);
+      setPromptHistory(selectedChat.messages.map(msg => ({role: msg.role, content: msg.content})));
     }
   }, [selectedChat, setMessages]);
 
