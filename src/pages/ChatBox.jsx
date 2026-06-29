@@ -6,6 +6,7 @@ import toast from "react-hot-toast";
 const ChatBox = () => {
   
   const containerRef  = useRef(null);  
+  const promptRef = useRef(null);
    
   const { selectedChat, theme,user,axios, token, setUser } = useAppContext();
 
@@ -16,18 +17,21 @@ const ChatBox = () => {
   const [promptHistory, setPromptHistory] = useState([]);
   const [mode, setMode] = useState("text");
   const [isPublished, setIsPublished] = useState(false);
+  const canSubmit = prompt.trim().length > 0 && !loading;
 
   const onSubmit = async (e) => {
 
     try {
            e.preventDefault();
+           const trimmedPrompt = prompt.trim();
+           if (!trimmedPrompt) return;
            if(!user) return toast("Login to send message");
            setLoading(true)
            const promptCopy = prompt;
-           const promptHistoryCopy = [...promptHistory, {role:"user", content:prompt}];
+           const promptHistoryCopy = [...promptHistory, {role:"user", content:trimmedPrompt}];
            setPromptHistory(promptHistoryCopy);
            setPrompt("");
-           setMessages(prev => [...prev,{role:"user", content:prompt,timestamp:Date.now(),isImage:false}]);
+           setMessages(prev => [...prev,{role:"user", content:trimmedPrompt,timestamp:Date.now(),isImage:false}]);
 
            const {data} = await axios.post(`/api/message/${mode}`,{chatId:selectedChat._id,promptHistoryCopy,isPublished},
             {headers:{Authorization:token}});
@@ -46,10 +50,21 @@ const ChatBox = () => {
     } catch (error) {
       toast.error(error.message);
     }finally{
-      setPrompt("");
       setLoading(false);
     }
   };
+
+  const handlePromptChange = (e) => {
+    setPrompt(e.target.value);
+  };
+
+  const handlePromptKeyDown = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      if (canSubmit) onSubmit(e);
+    }
+  };
+
   useEffect(() => {
     if (selectedChat) {
       setMessages(selectedChat.messages);
@@ -64,6 +79,16 @@ const ChatBox = () => {
         behavior: "smooth",
       })
     }}, [messages]);
+
+  useEffect(() => {
+    if (!promptRef.current) return;
+    promptRef.current.style.height = "0px";
+    promptRef.current.style.height = `${Math.min(
+      promptRef.current.scrollHeight,
+      180
+    )}px`;
+  }, [prompt]);
+
   return (
     <div className="flex-1 flex flex-col justify-between m-5 md:m-10 xl:mx-30 max-md:mt-14 2xl:pr-40">
       {/* Chat Messages */}
@@ -101,14 +126,14 @@ const ChatBox = () => {
     <input
     onChange={(e)=>setIsPublished(e.target.checked)}
     type="checkbox" className="cursor-pointer" checked={isPublished}/>
-  </label>
+      </label>
 )}
       {/* Prompt Input */}
-      <form onSubmit={onSubmit} className="bg-primary/20 dark:bg-[#583C79]/30 border border-primary dark:border-[#80609F]/30 rounded-full w-full max-w-2xl p-3 pl-4 mx-auto flex gap-4 items-center">
+      <form onSubmit={onSubmit} className="bg-primary/20 dark:bg-[#583C79]/30 border border-primary dark:border-[#80609F]/30 rounded-2xl w-full max-w-2xl p-3 pl-4 mx-auto flex gap-3 items-end">
         <select
           onChange={(e) => setMode(e.target.value)}
           value={mode}
-          className="text-sm pl-3 pr-2 outline-none bg-transparent"
+          className="mb-1.5 text-sm pl-3 pr-2 outline-none bg-transparent"
         >
           <option className="dark:bg-purple-900" value="text">
             Text
@@ -117,18 +142,27 @@ const ChatBox = () => {
             Image
           </option>
         </select>
-        <input
-          onChange={(e) => setPrompt(e.target.value)}
+        <textarea
+          ref={promptRef}
+          onChange={handlePromptChange}
+          onKeyDown={handlePromptKeyDown}
           value={prompt}
-          type="text"
           placeholder="Type your prompt here..."
-          className="flex-1 w-full text-sm outline-none bg-transparent"
-          required
+          rows={1}
+          className="recent-chat-scroll max-h-44 min-h-8 flex-1 resize-none overflow-y-auto bg-transparent py-1.5 text-sm leading-5 outline-none placeholder:text-gray-400"
         />
-        <button disabled={loading}>
+        <button
+          type="submit"
+          disabled={!canSubmit}
+          className={`shrink-0 rounded-full transition-all ${
+            canSubmit
+              ? "cursor-pointer opacity-100 hover:scale-105"
+              : "cursor-not-allowed opacity-40"
+          }`}
+        >
           <img
             src={loading ? assets.stop_icon : assets.send_icon}
-            className="w-8 cursor-pointer invert-0 "
+            className="w-8 invert-0"
             alt=""
           />
         </button>

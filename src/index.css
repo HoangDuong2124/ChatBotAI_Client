@@ -12,6 +12,29 @@
   display: none;
 }
 
+.recent-chat-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(128, 96, 159, 0.45) transparent;
+}
+
+.recent-chat-scroll::-webkit-scrollbar {
+  display: block;
+  width: 6px;
+}
+
+.recent-chat-scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.recent-chat-scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(128, 96, 159, 0.45);
+  border-radius: 999px;
+}
+
+.recent-chat-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(128, 96, 159, 0.75);
+}
+
 .reset-tw :not(pre):not(code) {
   all: revert;
 }
