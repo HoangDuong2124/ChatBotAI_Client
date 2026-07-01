@@ -15,9 +15,7 @@ const ChatBox = () => {
 
   const [prompt, setPrompt] = useState("");
   const [promptHistory, setPromptHistory] = useState([]);
-  // "auto" => để AI tự quyết định text hay image (gọi endpoint gộp /send)
-  // "text" / "image" => ép buộc loại nội dung (gọi route cũ tương ứng)
-  const [mode, setMode] = useState("auto");
+  const [mode] = useState("auto");
   const [isPublished, setIsPublished] = useState(false);
   const canSubmit = prompt.trim().length > 0 && !loading;
 
@@ -37,9 +35,6 @@ const ChatBox = () => {
         ...prev,
         { role: "user", content: trimmedPrompt, timestamp: Date.now(), isImage: false },
       ]);
-
-      // "auto" gọi endpoint gộp để backend (AI) tự quyết định mode
-      // "text" / "image" vẫn ép buộc qua route cũ nếu user chọn rõ ràng
       const endpoint = mode === "auto" ? "/api/message/send" : `/api/message/${mode}`;
 
       const { data } = await axios.post(
@@ -56,8 +51,6 @@ const ChatBox = () => {
       if (data.success) {
         setMessages((prev) => [...prev, data.reply]);
 
-        // Dùng mode thực tế trả về từ server để trừ credit đúng,
-        // vì ở chế độ "auto" AI có thể quyết định khác với lựa chọn ban đầu
         const actualMode = data.mode || mode;
         setUser((prev) => ({
           ...prev,
@@ -157,7 +150,7 @@ const ChatBox = () => {
         onSubmit={onSubmit}
         className="bg-primary/20 dark:bg-[#583C79]/30 border border-primary dark:border-[#80609F]/30 rounded-2xl w-full max-w-2xl p-3 pl-4 mx-auto flex gap-3 items-end"
       >
-        <select
+        {/* <select
           onChange={(e) => setMode(e.target.value)}
           value={mode}
           className="mb-1.5 text-sm pl-3 pr-2 outline-none bg-transparent"
@@ -171,7 +164,7 @@ const ChatBox = () => {
           <option className="dark:bg-purple-900" value="image">
             Image
           </option>
-        </select>
+        </select> */}
         <textarea
           ref={promptRef}
           onChange={handlePromptChange}
